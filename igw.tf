@@ -1,6 +1,6 @@
 #Main VPC of the ECS Setup
 resource "aws_internet_gateway" "igw" {
-  vpc_id = var.aws_vpc.main_vpc.id
+  vpc_id = aws_vpc.main_vpc.id
 
   tags = {
     Name = "Gateway"
@@ -24,7 +24,7 @@ resource "aws_subnet" "public_web" {
 
   tags = {
     Name = "Public  Subnet ${tonumber(each.key) + 1}"
-    
+
   }
 }
 
@@ -36,7 +36,7 @@ resource "aws_route_table" "public_route" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw.id
   }
-  
+
   tags = {
     Name = "Public Route Table"
   }

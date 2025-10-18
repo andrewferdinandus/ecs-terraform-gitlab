@@ -1,16 +1,16 @@
 #ECS Security Group
 resource "aws_security_group" "ecs_sec_group" {
-  name   = var.ecs_sec_group.name
-  vpc_id = aws_vpc.main_vpc.id
+  name        = var.ecs_sec_group.name
+  vpc_id      = aws_vpc.main_vpc.id
   description = var.ecs_sec_group.description
 
   ingress {
-    description      = "Allow HTTP Traffic" 
-    from_port        = 80
-    to_port          = 80
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
-    
+    description = "Allow HTTP Traffic"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+
 
   }
 

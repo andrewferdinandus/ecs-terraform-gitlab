@@ -1,7 +1,7 @@
 variable "project_name" {
   description = "ECS Project"
-  type = string
-  default = "ECS_CICD_Project"
+  type        = string
+  default     = "ECS_CICD_Project"
 }
 
 
@@ -11,15 +11,15 @@ variable "region" {
 
 variable "main_vpc" {
   type = object({
-    name = string
+    name                 = string
     enable_dns_hostnames = bool
-    enable_dns_support = bool
+    enable_dns_support   = bool
 
   })
   default = {
-    name = "Multi Tier VPC"
+    name                 = "Multi Tier VPC"
     enable_dns_hostnames = true
-    enable_dns_support = true
+    enable_dns_support   = true
   }
 }
 
@@ -43,12 +43,12 @@ variable "azs" {
 
 variable "ecs_sec_group" {
   type = object({
-    name = string
+    name        = string
     description = string
 
   })
   default = {
-    name = "ECS SG"
+    name        = "ECS SG"
     description = "ECS Security Group"
   }
 }
