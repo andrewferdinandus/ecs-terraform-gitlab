@@ -13,9 +13,8 @@ variables:
   DOCKER_CERT_PATH: ""
   DOCKER_DRIVER: "overlay2"
 
-############################
+
 # BUILD STAGE
-############################
 build:
   stage: build
   image: docker:25
@@ -39,9 +38,8 @@ build:
     - docker push "${ECR_URL}:latest"
   only: [main]
 
-############################
+
 # DEPLOY STAGE
-############################
 deploy:
   stage: deploy
   image:
@@ -59,9 +57,8 @@ deploy:
       -var="service_size=${SERVICE_SIZE}"
   only: [main]
 
-############################
+
 # DESTROY STAGE (manual)
-############################
 destroy:
   stage: destroy
   image:
