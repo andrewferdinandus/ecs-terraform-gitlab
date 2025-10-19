@@ -1,7 +1,7 @@
 variable "project_name" {
   description = "ECS Project"
   type        = string
-  default     = "ECS_CICD_Project"
+  default     = "ecs_project"
 }
 
 
@@ -29,10 +29,11 @@ variable "vpc_cidr_block" {
   default     = "10.0.0.0/16"
 }
 
-variable "public_subnet_cidrs" {
-  description = "Public Subnet CIDRs (one per AZ)"
-  type        = list(string)
-  default     = ["10.0.1.0/24", "10.0.2.0/24"]
+
+variable "public_subnets_cidr" {
+    description = "Public Subents' CIDRs for Each AZ"
+    type = list(string)
+    default = ["10.0.1.0/24", "10.0.2.0/24"]
 }
 
 variable "azs" {
@@ -53,4 +54,24 @@ variable "ecs_sec_group" {
   }
 }
 
+# ECR Repository URL (will be passed by pipeline)
+variable "ecr_repo_url" {
+  description = "ECR repository URL to pull image from"
+  type        = string
+  default     = null
+}
+
+# Docker image tag (also passed by pipeline)
+variable "image_tag" {
+  description = "Image tag for the Docker image in ECR"
+  type        = string
+  default     = "latest"
+}
+
+# Vertical scaling (manual or from pipeline)
+variable "service_size" {
+  description = "Service size to control CPU and memory (small, medium, large)"
+  type        = string
+  default     = "small"
+}
 

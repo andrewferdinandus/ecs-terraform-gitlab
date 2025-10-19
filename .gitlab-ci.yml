@@ -1,0 +1,55 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  AWS_REGION: "us-east-1"
+  PROJECT_NAME: "ecs-cicd-project"
+  APP_DIR: "app"
+  TF_DIR: "terraform"
+  IMAGE_TAG: "${CI_COMMIT_SHORT_SHA}"
+  SERVICE_SIZE: "small"
+
+before_script:
+  - apk add --no-cache python3 py3-pip aws-cli jq docker-cli
+
+# ----------------------------------------------------------
+# 1️⃣ BUILD & PUSH TO ECR
+# ----------------------------------------------------------
+build:
+  stage: build
+  image: docker:25
+  services:
+    - docker:dind
+  script:
+    - echo "Logging in to ECR..."
+    - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+    - export ECR_URL="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT_NAME}"
+
+    - echo "Building Docker image..."
+    - docker build -t ${ECR_URL}:${IMAGE_TAG} -t ${ECR_URL}:latest $APP_DIR
+
+    - echo "Pushing image to ECR..."
+    - docker push ${ECR_URL}:${IMAGE_TAG}
+    - docker push ${ECR_URL}:latest
+  only:
+    - main
+
+# ----------------------------------------------------------
+# 2️⃣ DEPLOY USING TERRAFORM
+# ----------------------------------------------------------
+deploy:
+  stage: deploy
+  image: hashicorp/terraform:1.8
+  script:
+    - cd $TF_DIR
+    - terraform init -input=false
+    - terraform apply -auto-approve \
+        -var="project_name=$PROJECT_NAME" \
+        -var="region=$AWS_REGION" \
+        -var="ecr_repo_url=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT_NAME}" \
+        -var="image_tag=$IMAGE_TAG" \
+        -var="service_size=$SERVICE_SIZE"
+  only:
+    - main

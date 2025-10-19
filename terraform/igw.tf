@@ -9,7 +9,7 @@ resource "aws_internet_gateway" "igw" {
 
 locals {
   public_web_defs = {
-    for idx, cidr in var.public_subnet_cidrs :
+    for idx, cidr in var.public_subnets_cidr :
     idx => { cidr = cidr, az = var.azs[idx] }
   }
 }
