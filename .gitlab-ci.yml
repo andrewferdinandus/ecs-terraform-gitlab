@@ -1,5 +1,5 @@
 ---
-stages: [build, deploy]
+stages: [build, deploy, destroy]
 
 variables:
   AWS_REGION: "us-east-1"
@@ -13,6 +13,9 @@ variables:
   DOCKER_CERT_PATH: ""
   DOCKER_DRIVER: "overlay2"
 
+############################
+# BUILD STAGE
+############################
 build:
   stage: build
   image: docker:25
@@ -36,6 +39,9 @@ build:
     - docker push "${ECR_URL}:latest"
   only: [main]
 
+############################
+# DEPLOY STAGE
+############################
 deploy:
   stage: deploy
   image:
@@ -52,3 +58,27 @@ deploy:
       -var="image_tag=${IMAGE_TAG}"
       -var="service_size=${SERVICE_SIZE}"
   only: [main]
+
+############################
+# DESTROY STAGE (manual)
+############################
+destroy:
+  stage: destroy
+  image:
+    name: hashicorp/terraform:1.8
+    entrypoint: [""]
+  script:
+    - cd "${TF_DIR}"
+    - terraform init -input=false
+    - >
+      terraform destroy -auto-approve
+      -var="project_name=${PROJECT_NAME}"
+      -var="region=${AWS_REGION}"
+      -var="ecr_repo_url=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT_NAME}"
+      -var="image_tag=${IMAGE_TAG}"
+      -var="service_size=${SERVICE_SIZE}"
+  when: manual          # 👈 must be manually triggered
+  allow_failure: false  # 👈 ensures failures stop the job
+  environment:
+    name: destroy
+  only: [main]          # 👈 restricts to main branch
