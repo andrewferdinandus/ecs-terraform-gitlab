@@ -38,7 +38,9 @@ build:
 
 deploy:
   stage: deploy
-  image: hashicorp/terraform:1.8
+  image:
+    name: hashicorp/terraform:1.8
+    entrypoint: [""]
   script:
     - cd "${TF_DIR}"
     - terraform init -input=false
