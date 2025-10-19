@@ -2,23 +2,51 @@
 
 This project automates the deployment of a containerized web application to Amazon ECS (Fargate) using Terraform and a GitLab CI/CD pipeline. The application is a simple Nginx web service containerized with Docker, and the pipeline automatically builds, pushes, and deploys it on ECS.
 
+
+![AWS ECS CI/CD Project using Terraform & GitLab ](aws_ecs_terraform.png)
+
+
 ## 🧩 Project Structure
 ```text
-ecs-terraform-gitlab/
+ECS-TERRAFORM-GITLAB/
 │
-├── app/                      # Sample containerized web app
-│   ├── Dockerfile
-│   └── index.html
+├── app/                              # Application Layer (Dockerized Web App)
+│   ├── Dockerfile                    # Builds Nginx-based container
+│   └── index.html                    # Static webpage for ECS deployment test
 │
-├── terraform/                # Terraform Infrastructure-as-Code (IaC)
-│   ├── main.tf
-│   ├── variables.tf
-│   ├── outputs.tf
-│   └── (resources for ECS, VPC, Subnets, SG, ECR, etc.)
+├── terraform/                        # Infrastructure Layer (Terraform IaC)
+│   ├── backend.tf                    # Remote backend (S3 + DynamoDB) configuration
+│   ├── provider.tf                   # AWS provider + region definition
+│   ├── variables.tf                  # All input variables
+│   ├── vpc.tf                        # Creates VPC + subnets
+│   ├── igw.tf                        # Internet Gateway + route table
+│   ├── security_groups.tf            # Security Group for ECS tasks
+│   ├── ecr.tf                        # ECR repository configuration
+│   ├── ecs.tf                        # ECS cluster, roles, task definition, service
+│   ├── outputs.tf                    # Terraform outputs (ECS, VPC, ECR, etc.)
+│   └── .terraform.lock.hcl           # Terraform dependency lock file (auto-generated)
 │
-├── .gitlab-ci.yml            # GitLab CI/CD pipeline definition
-└── README.md                 # Project documentation
+├── .gitlab-ci.yml                    # GitLab CI/CD pipeline for build/deploy/destroy
+├── .gitignore                        # Ignores Terraform state and sensitive files
+└── README.md                         # Project documentation (overview, steps, etc.)
 ```
+
+
+## 🧩 What Each File Does
+| File                   | Purpose                                                               |
+| ---------------------- | --------------------------------------------------------------------- |
+| **backend.tf**         | Configures Terraform remote state in an S3 bucket with DynamoDB lock. |
+| **provider.tf**        | Declares AWS provider and region.                                     |
+| **variables.tf**       | Holds reusable project parameters (VPC CIDR, AZs, ECS sizes, etc.).   |
+| **vpc.tf**             | Creates custom VPC and public subnets.                                |
+| **igw.tf**             | Sets up Internet Gateway and public route table.                      |
+| **security_groups.tf** | Allows HTTP (port 80) inbound and all outbound traffic.               |
+| **ecr.tf**             | Creates AWS ECR repo for storing container images.                    |
+| **ecs.tf**             | Defines ECS cluster, task definition, service, and IAM roles.         |
+| **outputs.tf**         | Exposes IDs, names, and URLs after apply.                             |
+| **app/Dockerfile**     | Builds Nginx image serving your `index.html`.                         |
+| **.gitlab-ci.yml**     | Automates build → push → deploy → destroy pipeline stages.            |
+
 
 
 ## 🎯 Objective
@@ -36,6 +64,7 @@ The goal of this project is to automate ECS deployment with infrastructure and p
 - Centralized logging using AWS CloudWatch
 
 
+
 | Category         | Tools Used      |
 | ---------------- | --------------- |
 | Cloud Provider   | AWS             |
@@ -45,6 +74,7 @@ The goal of this project is to automate ECS deployment with infrastructure and p
 | Compute          | ECS Fargate     |
 | Repository       | GitHub / GitLab |
 | Logging          | AWS CloudWatch  |
+
 
 
 ## 🏗️ Infrastructure Overview
@@ -64,9 +94,11 @@ The Terraform configuration creates the following components:
 | **ECS Service**                    | Deploys and maintains the running task in ECS                         |
 
 
+
 ## 🐳 Application (app/)
 
 A minimal Nginx web app used for testing container deployment.
+
 
 ### Dockerfile
 ``` text
@@ -74,6 +106,7 @@ FROM nginx:alpine
 COPY index.html /usr/share/nginx/html/index.html
 EXPOSE 80
 ```
+
 ### index.html
 ```text
 <html>
@@ -83,6 +116,7 @@ EXPOSE 80
 </html>
 ```
 
+
 ## ⚙️ Terraform Configuration (terraform/)
 
 The Terraform scripts:
@@ -91,13 +125,28 @@ The Terraform scripts:
 
 - Automatically read parameters (like ECR image URL and tag) from pipeline variables
 
+
 ## ⚙️ CI/CD Pipeline (.gitlab-ci.yml)
-### Pipeline Stages
-| Stage       | Description                                    |
-| ----------- | ---------------------------------------------- |
-| **build**   | Builds Docker image & pushes to AWS ECR        |
-| **deploy**  | Runs Terraform to provision & deploy ECS       |
-| **destroy** | Manually triggered Terraform destroy (cleanup) |
+
+## Pipeline Stages
+
+
+### 1️⃣ Build Stage
+
+Docker builds the Nginx container.
+
+Pushes image to AWS ECR.
+
+### 2️⃣ Deploy Stage
+
+Terraform provisions VPC, ECS Cluster, and deploys Fargate service.
+
+The container image from ECR runs on ECS.
+
+### 3️⃣ Destroy Stage (manual)
+
+Cleans up all resources (terraform destroy).
+
 
 
 ### Key automation features:
@@ -110,7 +159,9 @@ The Terraform scripts:
 
 - Destroy job is manual to avoid accidental deletions
 
+
 ## Environment Variables (GitLab → Settings → CI/CD → Variables)
+
 | Key                     | Description      | Example                      |
 | ----------------------- | ---------------- | ---------------------------- |
 | `AWS_ACCESS_KEY_ID`     | AWS access key   | `AKIA********`               |
@@ -118,6 +169,7 @@ The Terraform scripts:
 | `AWS_ACCOUNT_ID`        | AWS account ID   | `123456789012`               |
 | `AWS_REGION`            | AWS region       | `us-east-1`                  |
 | `SERVICE_SIZE`          | ECS scaling size | `small` / `medium` / `large` |
+
 
 
 ## 🚀 Deployment Steps
@@ -146,9 +198,11 @@ aws dynamodb create-table \
   --billing-mode PAY_PER_REQUEST
 ```
 
+
 ### 2️⃣ Run GitLab Pipeline
 
-Push code to main branch (pipeline triggers automatically). Or manually run pipeline → Build → Pipelines → Run Pipeline.
+1. Push code to main branch (pipeline triggers automatically).
+2. Or manually run pipeline → Build → Pipelines → Run Pipeline.
 
 Stages:
 
@@ -157,7 +211,7 @@ Stages:
 - deploy: Applies Terraform to deploy ECS
 
 - Check ECS Cluster → Tasks → copy Public IP and test in browser:
-
+  
 ```text
 http://<PUBLIC_IP>
 ```
@@ -165,6 +219,7 @@ http://<PUBLIC_IP>
 You should see:
 
 ### ECS CI/CD Deployment Success!
+
 
 ### 3️⃣ Destroy Infrastructure (Manual)
 
@@ -174,6 +229,7 @@ Trigger the destroy job from the GitLab pipeline UI:
 terraform destroy -auto-approve
 ```
 This removes all ECS resources (VPC, subnets, ECS, ECR, CloudWatch).
+
 
 ## 🔍 Outputs
 
@@ -186,6 +242,7 @@ Outputs:
   public_subnet_ids       = ["subnet-xxxx", "subnet-yyyy"]
   log_group_name          = "/ecs/ecs_project"
 ```
+
 
 ## 🧠 Useful AWS CLI Commands
 
@@ -200,6 +257,7 @@ ENI_ID=$(aws ecs describe-tasks --region $REGION --cluster $CLUSTER --tasks $TAS
 aws ec2 describe-network-interfaces --region $REGION --network-interface-ids $ENI_ID --query 'NetworkInterfaces[0].Association.PublicIp' --output text
 ```
 
+
 ## 📘 Summary
 | Feature                               | Implemented |
 | ------------------------------------- | ----------- |
@@ -210,6 +268,7 @@ aws ec2 describe-network-interfaces --region $REGION --network-interface-ids $EN
 | CloudWatch logging                    | ✅           |
 | Vertical scaling (small/medium/large) | ✅           |
 | Automated ECR image builds            | ✅           |
+
 
 
 ## 👤 Author
