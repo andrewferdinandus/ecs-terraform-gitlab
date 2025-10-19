@@ -3,7 +3,7 @@
 This project automates the deployment of a containerized web application to Amazon ECS (Fargate) using Terraform and a GitLab CI/CD pipeline. The application is a simple Nginx web service containerized with Docker, and the pipeline automatically builds, pushes, and deploys it on ECS.
 
 
-![AWS ECS CI/CD Project using Terraform & GitLab ](aws_ecs_terraform.png)
+![AWS ECS CI/CD Project using Terraform & GitLab ](aws_ecs.png)
 
 
 ## 🧩 Project Structure
