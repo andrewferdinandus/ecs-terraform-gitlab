@@ -28,8 +28,7 @@ build:
     # login to ECR
     - >
       aws ecr get-login-password --region "${AWS_REGION}" |
-      docker login --username AWS --password-stdin \
-      "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+      docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
   script:
     - export ECR_URL="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT_NAME}"
     - docker build -t "${ECR_URL}:${IMAGE_TAG}" -t "${ECR_URL}:latest" "${APP_DIR}"
